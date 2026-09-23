@@ -1,0 +1,5 @@
+node_modules/
+dist/
+browser/app.js
+morse-code.html
+*.tsbuildinfo

@@ -1,0 +1,43 @@
+{
+  "name": "rxjs-morse-code-chatgpt-astra-six",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Functional Morse encoding, timed decoding, and round trips with TypeScript and RxJS 7.8.2.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "demo": "npm run build && node dist/demo.js",
+    "build:browser": "npm run build && node scripts/build-browser.mjs",
+    "browser": "esbuild src/browser.ts --bundle --format=iife --outfile=browser/app.js --servedir=browser --serve=127.0.0.1:8080",
+    "start": "esbuild src/browser.ts --bundle --format=iife --outfile=browser/app.js --servedir=browser --serve=127.0.0.1:8080"
+  },
+  "dependencies": {
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "esbuild": "0.28.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hansschenker/rxjs-morse-code-chatgpt-astra-six.git"
+  },
+  "contributors": [
+    {
+      "name": "ChatGPT-Astra 6",
+      "email": "chatgpt-astra-6@openai.com"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Morse Lab · Encode and decode</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; color: #eaf0f7; background: #101722; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px 20px 56px; }
+    main { max-width: 1100px; margin: auto; }
+    header { margin-bottom: 28px; }
+    .eyebrow { color: #78d6c6; text-transform: uppercase; letter-spacing: .14em; font-size: .8rem; font-weight: 700; }
+    h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 10px 0; letter-spacing: -.04em; }
+    h2 { font-size: 1.35rem; margin: 0 0 8px; }
+    p { line-height: 1.6; color: #aebfd1; margin: 8px 0 18px; }
+    .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start; }
+    section { background: #182332; border: 1px solid #33445a; border-radius: 18px; padding: 26px; }
+    label, .label { display: block; font-size: .83rem; font-weight: 650; color: #b8c9dc; margin: 20px 0 8px; }
+    input { width: 100%; border: 1px solid #536b83; border-radius: 9px; background: #0f1927; color: #fff; padding: 13px; font: inherit; }
+    input[aria-invalid="true"] { border-color: #fca8ac; }
+    button { border: 1px solid #536b83; border-radius: 9px; padding: 10px 15px; background: #263950; color: #eaf0f7; font: inherit; font-weight: 650; cursor: pointer; }
+    button.primary { background: #91e5cd; border-color: #91e5cd; color: #102d2b; }
+    button:disabled { opacity: .4; cursor: not-allowed; }
+    button:hover:enabled { filter: brightness(1.12); }
+    :focus-visible { outline: 3px solid #f6d277; outline-offset: 4px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+    output { display: block; }
+    .code, .transcript { border-radius: 9px; padding: 14px; background: #0f1927; overflow-wrap: anywhere; min-height: 54px; }
+    .code { color: #91e5cd; font: 1.05rem/1.6 ui-monospace, monospace; letter-spacing: .09em; }
+    .transcript { font-size: 1.15rem; line-height: 1.6; min-height: 92px; white-space: pre-wrap; }
+    .signal { display: flex; align-items: center; gap: 12px; font-size: .9rem; color: #b8c9dc; min-height: 38px; }
+    #lamp { flex-shrink: 0; width: 22px; height: 22px; background: #314357; border: 2px solid #647b92; border-radius: 50%; }
+    #lamp[data-signal="on"] { background: #9af6cf; border-color: #caffed; box-shadow: 0 0 18px #8aefbd88; }
+    #morse-key { display: block; width: 100%; min-height: 115px; margin-top: 20px; font-size: 1.3rem; touch-action: none; user-select: none; -webkit-user-select: none; }
+    #morse-key[data-pressed="true"] { background: #91e5cd; color: #102d2b; border-color: #caffed; }
+    .detail { color: #aebfd1; font-size: .86rem; line-height: 1.55; min-height: 24px; }
+    .issue, [data-kind="error"] { color: #ffb4b7; letter-spacing: normal; }
+    .issue:empty { display: none; }
+    .timing { margin-top: 20px; padding: 18px 24px; }
+    .timing p { margin: 4px 0; }
+    code { font-family: ui-monospace, monospace; color: #b9edda; }
+    footer { color: #aebfd1; font-size: .8rem; margin-top: 22px; line-height: 1.6; }
+    a { color: #91e5cd; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } section { padding: 20px; } body { padding: 22px 14px; } }
+    @media (prefers-reduced-motion: reduce) { #lamp[data-signal="on"] { box-shadow: none; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Functional TypeScript · RxJS 7.8.2</div>
+    <h1>Morse Lab</h1>
+    <p>Turn text into timed signals. Turn presses and pauses back into text.</p>
+  </header>
+  <div class="grid">
+    <section aria-labelledby="transmit-title">
+      <h2 id="transmit-title">Text → signal → text</h2>
+      <p>The transmitter sends your message to a receiver that reads only the on/off signal and its timing.</p>
+      <label for="message">Message · A–Z, 0–9 and spaces</label>
+      <input id="message" value="SOS HELP" autocomplete="off" spellcheck="false" aria-describedby="input-help">
+      <div id="input-help" class="detail">Press Enter or Send. Additional messages join the queue.</div>
+      <span class="label">Morse preview</span>
+      <output id="morse" class="code" for="message"></output>
+      <div class="actions">
+        <button id="send" type="button" class="primary">Send</button>
+        <button id="stop" type="button">Stop</button>
+        <button id="clear-transmission" type="button">Clear</button>
+      </div>
+      <div class="signal"><span id="lamp" data-signal="off" aria-hidden="true"></span><output id="transmit-status">Signal off</output></div>
+      <span class="label">Received text</span>
+      <output id="received" class="transcript" aria-live="polite"></output>
+      <span class="label">Marks currently being received</span>
+      <output id="received-code" class="code"></output>
+      <output id="transmit-issue" class="detail issue" aria-live="polite"></output>
+      <p class="detail">Stop discards the queue and unfinished letter. Clear also clears the received text.</p>
+    </section>
+    <section aria-labelledby="receive-title">
+      <h2 id="receive-title">Press → pause → text</h2>
+      <p>Try the same decoder by hand. Hold the key with a pointer, or focus it and hold Space. Short press: dot. Long press: dash.</p>
+      <button id="morse-key" type="button" aria-pressed="false" aria-describedby="key-help">Hold to send a mark</button>
+      <div id="key-help" class="detail">Try <code>...</code> for S, <code>---</code> for O, or <code>.-</code> for A.</div>
+      <output id="status" class="detail"></output>
+      <span class="label">Decoded text</span>
+      <output id="decoded" class="transcript" aria-live="polite"></output>
+      <span class="label">Current marks</span>
+      <output id="current-code" class="code"></output>
+      <output id="last-mark" class="detail"></output>
+      <output id="issue" class="detail issue" aria-live="polite"></output>
+      <div class="actions"><button id="clear" type="button">Clear hand key</button></div>
+    </section>
+  </div>
+  <section class="timing" aria-label="Timing guide">
+    <p><strong>One unit = 150 ms.</strong> The transmitter uses a 150 ms dot and a 450 ms dash. The receiver treats presses up to 300 ms as dots.</p>
+    <p>Within a letter: pause briefly. After a letter: pause at least <strong>450 ms</strong>. Between words: pause at least <strong>1,050 ms</strong>.</p>
+  </section>
+  <footer>The main contributor to this project is ChatGPT-Astra 6.<br>
+    <a href="https://github.com/hansschenker/rxjs-morse-code-chatgpt-astra-six">Source and documentation</a> · No audio or microphone required.
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
