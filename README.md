@@ -182,7 +182,7 @@ conversation. Third-party dependency licenses and notices are included in
 Contribution commits use this Git trailer:
 
 ```text
-Co-authored-by: ChatGPT-Astra 6 <chatgpt-astra-6@openai.com>
+Co-Authored-By: ChatGPT Astra 6 <noreply@openai.com>
 ```
 
 [GitHub associates co-authors with accounts](https://docs.github.com/en/pull-requests/how-tos/commit-changes/creating-a-commit-with-multiple-authors) using the trailer's email address;
